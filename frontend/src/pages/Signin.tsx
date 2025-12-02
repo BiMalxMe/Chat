@@ -5,7 +5,7 @@ export const Signin = () => {
 
     return (
         <div>
-            Signup page
+            Signin page
         </div>
     )
 }
