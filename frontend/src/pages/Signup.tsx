@@ -2,8 +2,10 @@ import { Button } from "../components/Button";
 import { User, Mail, Lock } from "lucide-react";
 import { InputField } from "../components/InputField";
 import { useState } from "react";
+import { useNavigate } from "react-router";
 
 export const Signup = () => {
+    const navigate = useNavigate();
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -29,7 +31,7 @@ export const Signup = () => {
   };
 
   return (
-    <div className="flex items-center justify-center min-h-screen bg-[#0A0F1A] text-white px-4">
+    <div className="flex items-center justify-center min-h-screen text-white px-4">
       <div className="w-full max-w-md bg-[#0D1117] p-8 rounded-2xl border border-gray-800 shadow-xl">
 
         {/* Header */}
@@ -88,7 +90,7 @@ export const Signup = () => {
           {/* Switch to Sign In */}
           <p className="text-center text-gray-400 text-sm mt-3">
             Already have an account?{" "}
-            <span className="text-blue-400 cursor-pointer hover:underline">
+            <span className="text-blue-400 cursor-pointer hover:underline" onClick={() => navigate("/signin")}>
               Sign In
             </span>
           </p>
