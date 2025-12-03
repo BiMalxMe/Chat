@@ -7,33 +7,41 @@ interface ButtonProps {
   startIcon?: ReactElement;
   endIcon?: ReactElement;
   onclick?: () => void;
-  fullwidth?:Boolean;
+  fullwidth?: boolean;
 }
 
 const variantStyle = {
-  primary: "bg-white text-black",
-  secondary: "bg-purple-300 text-purple-600",
+  primary: "bg-gray-100 text-black",
+  secondary: "bg-gray-100 text-black", 
 };
 
 const sizeStyles = {
   sm: "py-1 px-2 text-sm",
   md: "py-2 px-4 text-md",
-  lg: "py-4 px-6 text-lg",
+  lg: "py-3 px-6 text-lg",
 };
 
-const defaultStyles = "rounded-md px-4 py-2 font-light flex items-center";
+const defaultStyles =
+  "rounded-md font-light flex items-center border border-gray-300";
 
 export const Button = (props: ButtonProps) => {
   return (
     <button
-    onClick={props.onclick}
-      className={`${variantStyle[props.variant]} ${defaultStyles} ${
-        sizeStyles[props.size]
-      } cursor-pointer ${props.fullwidth?"flex w-full justify-center items-center ": ""}  hover:bg-blue-600 hover:scale-105 transition-transform duration-300 ease-in-out `}
+      onClick={props.onclick}
+      className={`
+        ${variantStyle[props.variant]}
+        ${defaultStyles}
+        ${sizeStyles[props.size]}
+        ${props.fullwidth ? "w-full justify-center" : ""}
+        cursor-pointer 
+        hover:bg-gray-100 
+        hover:scale-[1.02] 
+        transition-all duration-200
+      `}
     >
-      <div className="pr-2">{props.startIcon}</div>
-      {props.text}
-      <div className="pl-2">{props.endIcon}</div>
+      {props.startIcon && <span className="mr-2">{props.startIcon}</span>}
+      <span>{props.text}</span>
+      {props.endIcon && <span className="ml-2">{props.endIcon}</span>}
     </button>
   );
 };
