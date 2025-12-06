@@ -12,18 +12,18 @@ export const Signin = () => {
 
   const handleSignin = () => {
     if (!email || !password) {
-      toast.error("Please fill all fields");
+      alert("Please fill all fields");
       return;
     }
 
     if (!email.includes("@")) {
-      toast.error("Please enter a valid email address");
+      alert("Please enter a valid email address");
       return;
     }
 
     // Example sign-in logic
     console.log({ email, password });
-    toast.success("Signed in successfully!");
+    alert("Signed in successfully!");
     navigate("/dashboard"); // redirect after login
   };
 

@@ -3,31 +3,58 @@ import { User, Mail, Lock } from "lucide-react";
 import { InputField } from "../components/InputField";
 import { useState } from "react";
 import { useNavigate } from "react-router";
+import { toast } from "react-toastify";
 
 export const Signup = () => {
-    const navigate = useNavigate();
+  const navigate = useNavigate();
+
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [submitted, setSubmitted] = useState(false);
+  const [confirmPassword, setConfirmPassword] = useState("");
+
+  // Email format: letters, numbers, dot, underscore only
+  const emailPattern = /^[a-zA-Z0-9._]+@[a-zA-Z0-9.-]+\.[A-Za-z]{2,}$/;
+
+  // Name should contain only alphabets and spaces
+  const namePattern = /^[A-Za-z ]+$/;
 
   const handleSubmit = () => {
-    // Check if fields are empty
-    if (!name || !email || !password) {
+    // Basic empty field validation
+    if (!name || !email || !password || !confirmPassword) {
       alert("Please fill all fields");
       return;
     }
 
-    // Email validation (must include @)
-    if (!email.includes("@")) {
+    // Name validation
+    if (!namePattern.test(name)) {
+      alert("Name can only contain letters and spaces");
+      return;
+    }
+
+    // Email validation
+    if (!emailPattern.test(email)) {
       alert("Please enter a valid email address");
+      return;
+    }
+
+    // Password length check
+    if (password.length < 6) {
+      alert("Password must be at least 6 characters long");
+      return;
+    }
+
+    // Password match validation
+    if (password !== confirmPassword) {
+      alert("Passwords do not match");
       return;
     }
 
     // Example submission logic
     console.log({ name, email, password });
-    setSubmitted(true);
-    alert("Account created successfully!");
+    toast.success("Account created successfully!");
+
+    navigate("/signin");
   };
 
   return (
@@ -36,12 +63,8 @@ export const Signup = () => {
 
         {/* Header */}
         <div className="flex flex-col items-center mb-6 text-center gap-2">
-          <h1 className="mt-4 text-3xl font-bold">
-            Sign Up
-          </h1>
-          <p className="text-gray-400 mt-2 text-sm">
-            Create your new account
-          </p>
+          <h1 className="mt-4 text-3xl font-bold">Sign Up</h1>
+          <p className="text-gray-400 mt-2 text-sm">Create your new account</p>
         </div>
 
         {/* Form */}
@@ -51,7 +74,9 @@ export const Signup = () => {
             placeholder="Bimal Chalise"
             icon={<User className="w-5 h-5 text-gray-400" />}
             value={name}
-            onChange={( e:  React.ChangeEvent<HTMLInputElement>) => setName(e.target.value)}
+            onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+              setName(e.target.value)
+            }
           />
 
           <InputField
@@ -69,7 +94,20 @@ export const Signup = () => {
             placeholder="••••••••"
             icon={<Lock className="w-5 h-5 text-gray-400" />}
             value={password}
-            onChange={(e :  React.ChangeEvent<HTMLInputElement>) => setPassword(e.target.value)}
+            onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+              setPassword(e.target.value)
+            }
+          />
+
+          <InputField
+            label="Confirm Password"
+            type="password"
+            placeholder="••••••••"
+            icon={<Lock className="w-5 h-5 text-gray-400" />}
+            value={confirmPassword}
+            onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+              setConfirmPassword(e.target.value)
+            }
           />
 
           <Button
@@ -87,10 +125,13 @@ export const Signup = () => {
             <hr className="flex-1 border-gray-700" />
           </div>
 
-          {/* Switch to Sign In */}
+          {/* Switch */}
           <p className="text-center text-gray-400 text-sm mt-3">
             Already have an account?{" "}
-            <span className="text-blue-400 cursor-pointer hover:underline" onClick={() => navigate("/signin")}>
+            <span
+              className="text-blue-400 cursor-pointer hover:underline"
+              onClick={() => navigate("/signin")}
+            >
               Sign In
             </span>
           </p>
