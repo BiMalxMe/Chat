@@ -1,28 +1,30 @@
-import mongoose from 'mongoose'
-import dotenv from 'dotenv'
-dotenv.config()
+import mongoose from "mongoose";
+import dotenv from "dotenv";
+dotenv.config();
 
-mongoose.connect(process.env.MONGO_URL || "")
+mongoose.connect(process.env.MONGO_URL || "");
 
-const userSchema=new mongoose.Schema({
-    userName:String,
-    email:String,
-    password:String
-})
+const userSchema = new mongoose.Schema(
+  {
+    userName: {
+      type: String,
+      required: true,
+      trim: true,
+    },
+    email: {
+      type: String,
+      unique: true,
+      required: true,
+      lowercase: true,
+    },
+    password: {
+      type: String,
+      required: true,
+    },
+  },
+  { timestamps: true }
+);
 
-const accountSchema=new mongoose.Schema({
-    userID:{
-        type:mongoose.Schema.Types.ObjectId,
-        ref:'User',
-        required:true
-    },balance:{
-        type: Number,
-        required: true
-    }
-})
-const Account=mongoose.model('Account',accountSchema)
-const User=mongoose.model('Users',userSchema)
-module.exports={
-    User,
-    Account
-}
+
+
+export const User = mongoose.model("User", userSchema);
