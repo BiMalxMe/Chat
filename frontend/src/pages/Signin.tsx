@@ -1,30 +1,70 @@
 import { Button } from "../components/Button";
 import { Mail, Lock } from "lucide-react";
 import { InputField } from "../components/InputField";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useNavigate } from "react-router";
-import { toast } from "react-toastify";
 
 export const Signin = () => {
+  
   const navigate = useNavigate();
+
+    useEffect(() => {
+    const token = localStorage.getItem("tokenForChatauth");
+    if (token) {
+      navigate("/dashboard");
+    }
+  }, [navigate]);
+
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
 
-  const handleSignin = () => {
+  const emailPattern = /^[a-zA-Z0-9._]+@[a-zA-Z0-9.-]+\.[A-Za-z]{2,}$/;
+
+  const handleSignin = async () => {
+    // Basic empty field validation
     if (!email || !password) {
-      alert("Please fill all fields");
+      alert("Please fill all fields.");
       return;
     }
 
-    if (!email.includes("@")) {
-      alert("Please enter a valid email address");
-      return;
-    }
+  if (!emailPattern.test(email)) {
+  alert("Please enter a valid email address.");
+  return;
+}
 
-    // Example sign-in logic
-    console.log({ email, password });
-    alert("Signed in successfully!");
-    navigate("/dashboard"); // redirect after login
+if (password.length < 6) {
+  alert("Password must be at least 6 characters long.");
+  return;
+}
+
+
+    try {
+      const res = await fetch("http://localhost:5000/api/v1/signin", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ email, password }),
+      });
+
+      const data = await res.json();
+
+      if (!res.ok) {
+        alert(data.message || "Signin failed");
+        return;
+      }
+      
+      localStorage.setItem("tokenForChatauth", data.token);
+
+      alert("Signed in successfully!");
+
+      // Redirect after success
+      navigate("/dashboard");
+
+    } catch (error) {
+      alert("Something went wrong. Try again.");
+      console.error("Signin error:", error);
+    }
   };
 
   return (
@@ -45,7 +85,9 @@ export const Signin = () => {
             placeholder="bimal@example.com"
             icon={<Mail className="w-5 h-5 text-gray-400" />}
             value={email}
-            onChange={(e: React.ChangeEvent<HTMLInputElement>) => setEmail(e.target.value)}
+            onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+              setEmail(e.target.value)
+            }
           />
 
           <InputField
@@ -54,7 +96,9 @@ export const Signin = () => {
             placeholder="••••••••"
             icon={<Lock className="w-5 h-5 text-gray-400" />}
             value={password}
-            onChange={(e: React.ChangeEvent<HTMLInputElement>) => setPassword(e.target.value)}
+            onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+              setPassword(e.target.value)
+            }
           />
 
           <Button

@@ -6,6 +6,13 @@ export const generateToken = (payload: object) => {
     return jwt.sign(payload, secretKey);
 }
 
+export const decodeToken = (token: string) => {
+    const secretKey = process.env.JWT_SECRET || 'default_secret';
+    return jwt.verify(token, secretKey);
+}
+
+
+
 export const signupSchema = zod.object({
     userName: zod.string().min(3, 'Username must be at least 3 characters long'),
     email: zod.string().email('Invalid email address'),

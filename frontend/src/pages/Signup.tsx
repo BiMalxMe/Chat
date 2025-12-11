@@ -1,60 +1,90 @@
 import { Button } from "../components/Button";
 import { User, Mail, Lock } from "lucide-react";
 import { InputField } from "../components/InputField";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useNavigate } from "react-router";
 import { toast } from "react-toastify";
 
 export const Signup = () => {
   const navigate = useNavigate();
 
+    useEffect(() => {
+    const token = localStorage.getItem("tokenForChatauth");
+    if (token) {
+      navigate("/dashboard");
+    }
+  }, [navigate]);
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
 
-  // Email format: letters, numbers, dot, underscore only
-  const emailPattern = /^[a-zA-Z0-9._]+@[a-zA-Z0-9.-]+\.[A-Za-z]{2,}$/;
-
-  // Name should contain only alphabets and spaces
+  // Name must contain only alphabets & spaces
   const namePattern = /^[A-Za-z ]+$/;
 
-  const handleSubmit = () => {
-    // Basic empty field validation
+  // Email: characters + numbers + . _ allowed
+  const emailPattern = /^[a-zA-Z0-9._]+@[a-zA-Z0-9.-]+\.[A-Za-z]{2,}$/;
+
+  const handleSubmit = async () => {
+    // Empty field check
     if (!name || !email || !password || !confirmPassword) {
-      alert("Please fill all fields");
+      toast.error("Please fill all fields");
       return;
     }
 
     // Name validation
     if (!namePattern.test(name)) {
-      alert("Name can only contain letters and spaces");
+      toast.error("Name must contain only alphabets and spaces");
       return;
     }
 
-    // Email validation
+    // Email pattern validation
     if (!emailPattern.test(email)) {
-      alert("Please enter a valid email address");
+      toast.error("Please enter a valid email address");
       return;
     }
+    
 
-    // Password length check
+    // Password length
     if (password.length < 6) {
-      alert("Password must be at least 6 characters long");
+      toast.error("Password must be at least 6 characters");
       return;
     }
 
-    // Password match validation
+    // Password match
     if (password !== confirmPassword) {
-      alert("Passwords do not match");
+      toast.error("Passwords do not match");
       return;
     }
 
-    // Example submission logic
-    console.log({ name, email, password });
-    toast.success("Account created successfully!");
+    // Send to backend
+    try {
+      const res = await fetch("http://localhost:5000/api/v1/signup", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          userName: name,
+          email,
+          password,
+        }),
+      });
 
-    navigate("/signin");
+      const data = await res.json();
+
+      if (!res.ok) {
+        toast.error(data.message || "Signup failed");
+        return;
+      }
+
+      toast.success(data.message || "Account created successfully!");
+      navigate("/signin");
+
+    } catch (error) {
+      console.error(error);
+      toast.error("Something went wrong. Try again!");
+    }
   };
 
   return (
@@ -74,9 +104,7 @@ export const Signup = () => {
             placeholder="Bimal Chalise"
             icon={<User className="w-5 h-5 text-gray-400" />}
             value={name}
-            onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
-              setName(e.target.value)
-            }
+            onChange={(e) => setName(e.target.value)}
           />
 
           <InputField
@@ -94,9 +122,7 @@ export const Signup = () => {
             placeholder="••••••••"
             icon={<Lock className="w-5 h-5 text-gray-400" />}
             value={password}
-            onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
-              setPassword(e.target.value)
-            }
+            onChange={(e) => setPassword(e.target.value)}
           />
 
           <InputField
@@ -105,9 +131,7 @@ export const Signup = () => {
             placeholder="••••••••"
             icon={<Lock className="w-5 h-5 text-gray-400" />}
             value={confirmPassword}
-            onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
-              setConfirmPassword(e.target.value)
-            }
+            onChange={(e) => setConfirmPassword(e.target.value)}
           />
 
           <Button
@@ -136,6 +160,7 @@ export const Signup = () => {
             </span>
           </p>
         </div>
+
       </div>
     </div>
   );
