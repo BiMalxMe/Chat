@@ -6,13 +6,21 @@ import { useNavigate } from "react-router";
 
 export const Signin = () => {
   
+  
   const navigate = useNavigate();
 
     useEffect(() => {
-    const token = localStorage.getItem("tokenForChatauth");
-    if (token) {
-      navigate("/dashboard");
-    }
+      //replace localStorage with cookies
+
+      const cookies = document.cookie.split("; ").reduce((acc: any, cookie) => {
+        const [name, value] = cookie.split("=");
+        acc[name] = value;
+        return acc;
+      }, {});
+
+      if (cookies.tokenForChatauth) {
+        navigate("/dashboard");
+      }
   }, [navigate]);
 
   const [email, setEmail] = useState("");
@@ -54,7 +62,10 @@ if (password.length < 6) {
         return;
       }
       
-      localStorage.setItem("tokenForChatauth", data.token);
+      // localStorage.setItem("tokenForChatauth", data.token);
+
+      //setting up the cookies for name email and token
+document.cookie = `tokenForChatauth=${encodeURIComponent(data.token)}; path=/; max-age=${7 * 24 * 60 * 60}`;
 
       alert("Signed in successfully!");
 

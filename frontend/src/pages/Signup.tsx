@@ -3,16 +3,23 @@ import { User, Mail, Lock } from "lucide-react";
 import { InputField } from "../components/InputField";
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router";
-import { toast } from "react-toastify";
+// import { alert from "reactalert";
 
 export const Signup = () => {
   const navigate = useNavigate();
 
+  //replace localStorage with cookies
     useEffect(() => {
-    const token = localStorage.getItem("tokenForChatauth");
-    if (token) {
-      navigate("/dashboard");
-    }
+      const cookies = document.cookie.split("; ").reduce((acc: any, cookie) => {
+        const [name, value] = cookie.split("=");
+        acc[name] = value;
+        return acc;
+      }, {});
+
+      if (cookies.tokenForChatauth) {
+        navigate("/dashboard");
+      }
+    
   }, [navigate]);
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
@@ -28,32 +35,32 @@ export const Signup = () => {
   const handleSubmit = async () => {
     // Empty field check
     if (!name || !email || !password || !confirmPassword) {
-      toast.error("Please fill all fields");
+      alert("Please fill all fields");
       return;
     }
 
     // Name validation
     if (!namePattern.test(name)) {
-      toast.error("Name must contain only alphabets and spaces");
+      alert("Name must contain only alphabets and spaces");
       return;
     }
 
     // Email pattern validation
     if (!emailPattern.test(email)) {
-      toast.error("Please enter a valid email address");
+      alert("Please enter a valid email address");
       return;
     }
     
 
     // Password length
     if (password.length < 6) {
-      toast.error("Password must be at least 6 characters");
+      alert("Password must be at least 6 characters");
       return;
     }
 
     // Password match
     if (password !== confirmPassword) {
-      toast.error("Passwords do not match");
+      alert("Passwords do not match");
       return;
     }
 
@@ -72,18 +79,25 @@ export const Signup = () => {
       });
 
       const data = await res.json();
+      
+     
 
       if (!res.ok) {
-        toast.error(data.message || "Signup failed");
+        alert(data.message || "Signup failed");
         return;
       }
+  // Set cookies for 7 days
+  document.cookie = `name=${encodeURIComponent(name)}; path=/; max-age=${7 * 24 * 60 * 60}`;
+  document.cookie = `email=${encodeURIComponent(email)}; path=/; max-age=${7 * 24 * 60 * 60}`;
+  // document.cookie = `tokenForChatauth=${encodeURIComponent(data.token)}; path=/; max-age=${7 * 24 * 60 * 60}`;
 
-      toast.success(data.message || "Account created successfully!");
-      navigate("/signin");
+  alert(data.message || "Account created successfully!");
+  navigate("/signin");
+
 
     } catch (error) {
       console.error(error);
-      toast.error("Something went wrong. Try again!");
+      alert("Something went wrong. Try again!");
     }
   };
 

@@ -1,7 +1,10 @@
 // server.ts
 
+const clients = new Set<WebSocket>();
+
 const server = Bun.serve({
   port: 3001,
+
   fetch(req, server) {
     // Upgrade HTTP → WebSocket
     if (server.upgrade(req)) return;
@@ -10,18 +13,35 @@ const server = Bun.serve({
   },
 
   websocket: {
-    open(ws) {
-      console.log("Client connected");
-      ws.send("Welcome to Bun WebSocket server!");
+    open(ws  : any) {
+      clients.add(ws);
+      console.log("Client connected:", clients.size);
+
+      ws.send(JSON.stringify({ type: "info", msg: "Connected to server" }));
     },
 
     message(ws, message) {
-      console.log("Received:", message);
-      ws.send(`Server echo: ${message}`);
+      const text = typeof message === "string" ? message : message.toString();
+      console.log("Received:", text);
+
+      // Create structured packet
+      const packet = JSON.stringify({
+        type: "chat",
+        msg: text,
+        time: Date.now(),
+      });
+
+      // Broadcast to all connected clients
+      for (const client of clients) {
+        if (client.readyState === WebSocket.OPEN) {
+          client.send(packet);
+        }
+      }
     },
 
-    close(ws) {
-      console.log("Client disconnected");
+    close(ws : any) {
+      clients.delete(ws);
+      console.log("Client disconnected:", clients.size);
     },
   }
 });

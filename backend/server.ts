@@ -2,46 +2,40 @@ import express from 'express';
 import dotenv from 'dotenv';
 import cors from 'cors';
 import { User } from './db/db.js';
-import { generateToken, signupSchema } from './utils.js';
+import { signupSchema, generateToken, decodeToken } from './utils.js';
+
+dotenv.config();
 
 const app = express();
-app.use(cors());
+app.use(cors({ origin: true, credentials: true }));
 app.use(express.json());
-dotenv.config();
 
 const PORT = process.env.PORT || 5000;
 
 app.post('/api/v1/signup', async (req, res) => {
-  const body = req.body; // get request body
-
-  // Validate input using zod
-  const parsedBody = signupSchema.safeParse(body);
-  if (!parsedBody.success) {
-    return res.status(400).json({
-      message: 'Invalid input',
-      errors: parsedBody.error,
-    });
-  }
+  const parsed = signupSchema.safeParse(req.body);
+  if (!parsed.success) return res.status(400).json({ message: 'Invalid input' });
 
   try {
+    const existing = await User.findOne({ email: parsed.data.email });
+    if (existing) return res.status(409).json({ message: 'User already exists' });
+
+    const passwordToken = generateToken({ password: parsed.data.password });
+
     const newUser = new User({
-      userName: body.userName,
-      email: body.email,
-      password: generateToken({ password: body.password }), //hashing password for security
+      userName: parsed.data.userName,
+      email: parsed.data.email,
+      password: passwordToken,
     });
 
     await newUser.save();
 
     res.status(201).json({
       message: 'User registered successfully',
-      user: newUser,
+      user: { id: newUser._id, userName: newUser.userName, email: newUser.email },
     });
-
-  } catch (error) {
-    res.status(500).json({
-      message: 'Error registering user',
-      error,
-    });
+  } catch {
+    res.status(500).json({ message: 'Error registering user' });
   }
 });
 
@@ -50,34 +44,35 @@ app.post('/api/v1/signin', async (req, res) => {
 
   try {
     const user = await User.findOne({ email });
-    if (!user) {
-      return res.status(404).json({ message: 'User not found' });
-    }
+    if (!user) return res.status(404).json({ message: 'User not found' });
 
-    if (password.length < 6) {
-      return res.status(400).json({ message: 'Password must be at least 6 characters long' });
-    }
-
-    if (password !== user.password) {
-      return res.status(401).json({ message: 'Incorrect password' });
-    }
+    const decoded = decodeToken(user.password);
+    if (decoded.password !== password) return res.status(401).json({ message: 'Incorrect password' });
 
     const token = generateToken({ id: user._id, email: user.email });
 
     res.status(200).json({
       message: 'Signin successful',
       token,
+      user: { id: user._id, userName: user.userName, email: user.email },
     });
-
-  } catch (error) {
-    res.status(500).json({
-      message: 'Error signing in',
-      error,
-    });
+  } catch {
+    res.status(500).json({ message: 'Error signing in' });
   }
 });
 
+//logout endpoint to clear the cookie
+
+
+app.get('/api/v1/getallusers', async (_req, res) => {
+  try {
+    const users = await User.find({}, { userName: 1, email: 1 });
+    res.status(200).json(users);
+  } catch {
+    res.status(500).json({ message: 'Error fetching users' });
+  }
+});
 
 app.listen(PORT, () => {
-  console.log(`Server is running on port ${PORT}`);
+  console.log(`Server running on port ${PORT}`);
 });
