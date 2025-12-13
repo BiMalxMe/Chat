@@ -3,6 +3,8 @@ import dotenv from 'dotenv';
 import cors from 'cors';
 import { User } from './db/db.js';
 import { signupSchema, generateToken, decodeToken } from './utils.js';
+import { authMiddleware } from './middlware.js';
+
 
 dotenv.config();
 
@@ -60,18 +62,21 @@ app.post('/api/v1/signin', async (req, res) => {
     res.status(500).json({ message: 'Error signing in' });
   }
 });
+app.get('/api/v1/getallusers', authMiddleware, (req, res) => {
+  //getting all the users except the logged in user
 
-//logout endpoint to clear the cookie
+  const loggedInUser = (req as any).user;
 
+  User.find({ _id: { $ne: loggedInUser.id } })
+    .then((users) => {
+      res.status(200).json({ users });
+    })
+    .catch(() => {
+      res.status(500).json({ message: 'Error fetching users' });
+    });
 
-app.get('/api/v1/getallusers', async (_req, res) => {
-  try {
-    const users = await User.find({}, { userName: 1, email: 1 });
-    res.status(200).json(users);
-  } catch {
-    res.status(500).json({ message: 'Error fetching users' });
-  }
 });
+
 
 app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);

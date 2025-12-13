@@ -7,18 +7,42 @@ interface User {
   email: string;
 }
 
+interface BackendUser {
+  userName: string;
+  email: string;
+}
+
+interface UsersResponse {
+  users: BackendUser[];
+}
+
 export const ChatList = () => {
   const [users, setUsers] = useState<User[]>([]);
+
+  const getCookie = (key: string): string | null => {
+    const found = document.cookie
+      .split("; ")
+      .find((row) => row.startsWith(key + "="));
+
+    if (!found) return null;
+    return decodeURIComponent(found.split("=")[1]);
+  };
 
   useEffect(() => {
     const fetchUsers = async () => {
       try {
-        const res = await axios.get("http://localhost:5000/api/v1/getallusers");
+        const res = await axios.get<UsersResponse>(
+          "http://localhost:5000/api/v1/getallusers",
+          {
+            headers: {
+              Authorization: `Bearer ${getCookie("tokenForChatauth")}`,
+            },
+          }
+        );
 
-        // map backend fields to required FE format
-        const mapped = res.data.map((u: any) => ({
-          name: u.userName,    // backend sends "userName"
-          email: u.email
+        const mapped = res.data.users.map((u) => ({
+          name: u.userName,
+          email: u.email,
         }));
 
         setUsers(mapped);
@@ -38,12 +62,9 @@ export const ChatList = () => {
         <p className="text-gray-500 text-sm">No users found...</p>
       )}
 
-      {users.map((u, index) => (
-        <div key={index} className="flex items-center gap-3 mb-4">
-          
-          {/* Static profile (no dropdown) */}
+      {users.map((u) => (
+        <div key={u.email} className="flex items-center gap-3 mb-4">
           <Profile name={u.name} email={u.email} />
-
           <div>
             <p className="font-semibold">{u.name}</p>
             <p className="text-xs text-gray-400">{u.email}</p>

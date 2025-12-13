@@ -1,8 +1,10 @@
 import { useEffect, useRef, useState } from "react";
 import { ChatList } from "./Chatlist";
+import { sendMessage } from "../utils/SendMessage";
 
 interface Message {
-  user: string;
+  from: string;
+  to: string;
   msg: string;
   time: string;
 }
@@ -13,7 +15,6 @@ export default function Chat() {
   const [messages, setMessages] = useState<Message[]>([]);
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
-  // cookie reader
   const getCookie = (name: string) => {
     return document.cookie
       .split("; ")
@@ -21,11 +22,12 @@ export default function Chat() {
       ?.split("=")[1];
   };
 
-  const userName = getCookie("name")
-    ? decodeURIComponent(getCookie("name")!)
+  const userEmail = getCookie("email")
+    ? decodeURIComponent(getCookie("email")!)
     : "Anonymous";
 
-  // websocket
+  const selectedUser = "kristi@gmail.com";
+
   useEffect(() => {
     const socket = new WebSocket("ws://localhost:3001");
     setWs(socket);
@@ -42,38 +44,21 @@ export default function Chat() {
     return () => socket.close();
   }, []);
 
-  const sendMessage = () => {
-    if (!input.trim()) return;
-    if (ws && ws.readyState === WebSocket.OPEN) {
-      ws.send(
-        JSON.stringify({
-          user: userName,
-          msg: input,
-          time: new Date().toLocaleTimeString(),
-        })
-      );
-      setInput("");
-    }
-  };
-
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages]);
 
   return (
     <div className="max-w-6xl mx-auto border border-gray-700 rounded-xl p-4 bg-gray-900 text-white h-[500px] flex">
-
-      {/* LEFT SIDEBAR */}
       <ChatList />
 
-      {/* CHAT AREA */}
       <div className="flex-1 flex flex-col p-3">
         <h1 className="text-xl font-bold mb-4">Chat</h1>
 
         <div className="flex-1 overflow-y-auto space-y-2">
           {messages.map((m, idx) => (
             <div key={idx} className="p-2 bg-gray-800 rounded-md">
-              <strong>{m.user}</strong>{" "}
+              <strong>{m.from}</strong>{" "}
               <span className="text-xs text-gray-400">[{m.time}]</span>
               <div>{m.msg}</div>
             </div>
@@ -87,10 +72,27 @@ export default function Chat() {
             placeholder="Type a message..."
             value={input}
             onChange={(e) => setInput(e.target.value)}
-            onKeyDown={(e) => e.key === "Enter" && sendMessage()}
+            onKeyDown={(e) =>
+              e.key === "Enter" &&
+              sendMessage({
+                ws,
+                from: userEmail,
+                to: selectedUser,
+                msg: input,
+                onSent: () => setInput(""),
+              })
+            }
           />
           <button
-            onClick={sendMessage}
+            onClick={() =>
+              sendMessage({
+                ws,
+                from: userEmail,
+                to: selectedUser,
+                msg: input,
+                onSent: () => setInput(""),
+              })
+            }
             className="bg-blue-600 px-4 rounded-md font-semibold"
           >
             Send
