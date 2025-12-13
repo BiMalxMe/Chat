@@ -68,6 +68,9 @@ app.get('/api/v1/getallusers', authMiddleware, (req, res) => {
   const loggedInUser = (req as any).user;
 
   User.find({ _id: { $ne: loggedInUser.id } })
+  //cant give the password field
+    .select('-password')
+
     .then((users) => {
       res.status(200).json({ users });
     })
