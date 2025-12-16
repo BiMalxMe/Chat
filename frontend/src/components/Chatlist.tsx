@@ -16,17 +16,19 @@ interface UsersResponse {
   users: BackendUser[];
 }
 
-export const ChatList = () => {
+interface ChatListProps {
+  selectedEmail: string | null;
+  onSelectUser: (email: string) => void;
+}
+
+export const ChatList = ({ selectedEmail, onSelectUser }: ChatListProps) => {
   const [users, setUsers] = useState<User[]>([]);
 
-  const getCookie = (key: string): string | null => {
-    const found = document.cookie
+  const getCookie = (key: string): string | null =>
+    document.cookie
       .split("; ")
-      .find((row) => row.startsWith(key + "="));
-
-    if (!found) return null;
-    return decodeURIComponent(found.split("=")[1]);
-  };
+      .find((row) => row.startsWith(key + "="))
+      ?.split("=")[1] ?? null;
 
   useEffect(() => {
     const fetchUsers = async () => {
@@ -40,12 +42,12 @@ export const ChatList = () => {
           }
         );
 
-        const mapped = res.data.users.map((u) => ({
-          name: u.userName,
-          email: u.email,
-        }));
-
-        setUsers(mapped);
+        setUsers(
+          res.data.users.map((u) => ({
+            name: u.userName,
+            email: u.email,
+          }))
+        );
       } catch (err) {
         console.error("Failed to fetch users:", err);
       }
@@ -58,12 +60,17 @@ export const ChatList = () => {
     <div className="w-1/4 border-r border-gray-700 p-3 overflow-y-auto">
       <h2 className="font-bold text-lg mb-3">Users</h2>
 
-      {users.length === 0 && (
-        <p className="text-gray-500 text-sm">No users found...</p>
-      )}
-
       {users.map((u) => (
-        <div key={u.email} className="flex items-center gap-3 mb-4">
+        <div
+          key={u.email}
+          onClick={() => onSelectUser(u.email)}
+          className={`flex items-center gap-3 mb-3 p-2 rounded cursor-pointer
+            ${
+              selectedEmail === u.email
+                ? "bg-gray-700"
+                : "hover:bg-gray-800"
+            }`}
+        >
           <Profile name={u.name} email={u.email} />
           <div>
             <p className="font-semibold">{u.name}</p>
