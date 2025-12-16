@@ -80,6 +80,30 @@ app.get('/api/v1/getallusers', authMiddleware, (req, res) => {
 
 });
 
+//change name route
+app.put('/api/v1/changename', authMiddleware, async (req, res) => {
+  const { newName } = req.body;
+  const loggedInUser = (req as any).user;
+
+  try {
+    const updatedUser = await User.findByIdAndUpdate(
+      loggedInUser.id,
+      { userName: newName },
+      { new: true }
+    ).select('-password');
+
+    if (!updatedUser) {
+      return res.status(404).json({ message: 'User not found' });
+    }
+
+    res.status(200).json({
+      message: 'Name updated successfully',
+      user: updatedUser,
+    });
+  } catch {
+    res.status(500).json({ message: 'Error updating name' });
+  }
+} );
 
 app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);
