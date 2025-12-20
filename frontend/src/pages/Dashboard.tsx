@@ -1,12 +1,13 @@
-import Chat from "../components/Chat";
-import { Logo } from "../components/Logo";
-import { Profile } from "../components/Profile";
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router";
+import SupportMe from "../components/SupportMe";
+import { Logo } from "../components/Logo";
+import { Profile } from "../components/Profile";
+import Chat from "../components/Chat";
 
 export const Dashboard = () => {
   const navigate = useNavigate();
-  const [loading, setLoading] = useState(true); // block rendering initially
+  const [loading, setLoading] = useState<boolean>(true);
 
   useEffect(() => {
     const token = document.cookie
@@ -15,24 +16,30 @@ export const Dashboard = () => {
       ?.split("=")[1];
 
     if (!token) {
-      // redirect immediately
       navigate("/signin", { replace: true });
     } else {
-      // allow render
       setLoading(false);
     }
   }, [navigate]);
 
-  // prevent any render until token is confirmed
   if (loading) return null;
 
   return (
-    <div className="text-white h-screen">
-      <div className="flex items-start justify-between w-2/4 mx-auto mt-20">
+    <div className="text-white min-h-screen">
+      {/* Top Bar */}
+      <div className="w-2/4 mx-auto mt-20 flex items-center justify-between">
+        {/* Left: Logo */}
         <Logo />
-        <Profile />
+
+        {/* Right: Profile + Support */}
+        <div className="flex items-center gap-4">
+          <SupportMe />
+          <Profile/>
+        </div>
       </div>
-      <div>
+
+      {/* Chat Section */}
+      <div className="mt-6">
         <Chat />
       </div>
     </div>
