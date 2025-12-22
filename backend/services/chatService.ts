@@ -9,6 +9,7 @@ export const saveChatConversation = async ({
   to: string;
   msg: string;
 }) => {
+  console.log("Saving message from", from, "to", to);
   const fromUser = await User.findOne({ email: from });
   const toUser = await User.findOne({ email: to });
 

@@ -1,12 +1,14 @@
 // server.ts
 
+import { saveChatConversation } from "./services/chatService";
+
 const clients = new Set<WebSocket>();
 
 const server = Bun.serve({
   port: 3001,
 
   fetch(req, server) {
-    // Upgrade HTTP → WebSocket
+    //  HTTP → WebSocket
     if (server.upgrade(req)) return;
 
     return new Response("WebSocket Server Running");
@@ -20,9 +22,18 @@ const server = Bun.serve({
       ws.send(JSON.stringify({ type: "info", msg: "Connected to server" }));
     },
 
-    message(ws, message) {
+   async message(ws, message) {
       const text = typeof message === "string" ? message : message.toString();
       console.log("Received:", text);
+     console.log("Saved chat conversation", text);
+
+      await saveChatConversation(
+        {
+          from: "test@test.com",
+          to: "test2@test.com",
+          msg: text,
+        }
+      );
 
       // Create structured packet
       const packet = JSON.stringify({
@@ -30,7 +41,7 @@ const server = Bun.serve({
         msg: text,
         time: Date.now(),
       });
-
+      
       // Broadcast to all connected clients
       for (const client of clients) {
         if (client.readyState === WebSocket.OPEN) {

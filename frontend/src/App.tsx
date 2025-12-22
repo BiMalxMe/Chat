@@ -6,6 +6,7 @@ import { Landing } from './pages/landing'
 // import { ToastContainer } from 'react-toastify'
 import { Signup } from './pages/Signup'
 import { Checkout } from './pages/Checkout'
+import { NotFound } from './pages/NotFound'
 
 function App() {
 
@@ -22,7 +23,7 @@ function App() {
               <Route path="/" element={<Landing/>}></Route>
 
               //if any other route is accessed, redirect to landing page
-              <Route path="*" element={<Landing/>}></Route>
+              <Route path="*" element={<NotFound/>}></Route>
           </Routes>
        </BrowserRouter>
        

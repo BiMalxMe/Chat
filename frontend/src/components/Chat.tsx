@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import { ChatList } from "./Chatlist";
 import { sendMessage } from "../utils/SendMessage";
+import { Image } from "lucide-react";
 
 interface Message {
   from: string;
@@ -76,6 +77,12 @@ export default function Chat() {
         )}
 
         <div className="flex-1 overflow-y-auto space-y-2">
+          {/* summarize the chat button */}
+<div className="flex justify-end w-full">
+  <button className="ml-2 text-xs bg-green-700 px-2 py-1 rounded-md hover:bg-green-600">
+    Summarize Chat
+  </button>
+</div>       
           {messages.map((m, idx) => (
             <div key={idx} className="p-2 bg-gray-800 rounded-md">
               <strong>{m.from}</strong>
@@ -86,28 +93,46 @@ export default function Chat() {
           <div ref={messagesEndRef} />
         </div>
 
-        <div className="flex gap-2 mt-2">
-          <input
-            className="flex-1 bg-gray-800 rounded-md p-2 focus:outline-none"
-            placeholder={
-              selectedUserEmail
-                ? "Type a message..."
-                : "Select a user to start chatting"
-            }
-            value={input}
-            disabled={!selectedUserEmail}
-            onChange={(e) => setInput(e.target.value)}
-            onKeyDown={(e) => e.key === "Enter" && handleSend()}
-          />
+      <div className="flex gap-2 mt-2 items-center">
+  {/* Image Upload Button */}
+  <label className="cursor-pointer text-gray-400 hover:text-white transition-colors">
+    <Image size={24} />
+    <input 
+      type="file" 
+      className="hidden"
+      accept="image/*" 
+      onChange={(e) => {
+        const file = e.target.files?.[0];
+        if (file) {
+          // Handle your file upload logic here
+          console.log("Selected file:", file);
+        }
+      }}
+      disabled={!selectedUserEmail}
+    />
+  </label>
 
-          <button
-            onClick={handleSend}
-            disabled={!selectedUserEmail}
-            className="bg-blue-600 px-4 rounded-md font-semibold disabled:opacity-50"
-          >
-            Send
-          </button>
-        </div>
+  <input
+    className="flex-1 bg-gray-800 rounded-md p-2 focus:outline-none"
+    placeholder={
+      selectedUserEmail
+        ? "Type a message..."
+        : "Select a user to start chatting"
+    }
+    value={input}
+    disabled={!selectedUserEmail}
+    onChange={(e) => setInput(e.target.value)}
+    onKeyDown={(e) => e.key === "Enter" && handleSend()}
+  />
+
+  <button
+    onClick={handleSend}
+    disabled={!selectedUserEmail}
+    className="bg-blue-600 px-4 py-2 rounded-md font-semibold disabled:opacity-50"
+  >
+    Send
+  </button>
+</div>
       </div>
     </div>
   );
