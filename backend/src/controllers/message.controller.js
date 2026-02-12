@@ -60,15 +60,15 @@ export const getMessagesByGroupId = async (req, res) => {
 
 export const sendMessage = async (req, res) => {
   try {
-    const { text, image } = req.body;
+    const { text, image, voice } = req.body;
     const { id: receiverId } = req.params;
     const senderId = req.user._id;
 
     console.log("=== SEND MESSAGE CALLED ===");
-    console.log("Message data:", { text, image: !!image, receiverId, senderId });
+    console.log("Message data:", { text, image: !!image, voice: !!voice, receiverId, senderId });
 
-    if (!text && !image) {
-      return res.status(400).json({ message: "Text or image is required." });
+    if (!text && !image && !voice) {
+      return res.status(400).json({ message: "Text, image, or voice is required." });
     }
     if (senderId.equals(receiverId)) {
       return res.status(400).json({ message: "Cannot send messages to yourself." });
@@ -84,11 +84,21 @@ export const sendMessage = async (req, res) => {
       imageUrl = uploadResponse.secure_url;
     }
 
+    let voiceUrl;
+    if (voice) {
+      const uploadResponse = await cloudinary.uploader.upload(voice, {
+        resource_type: "video",
+        folder: "voice_messages"
+      });
+      voiceUrl = uploadResponse.secure_url;
+    }
+
     const newMessage = new Message({
       senderId,
       receiverId,
       text,
       image: imageUrl,
+      voice: voiceUrl,
     });
 
     await newMessage.save();
@@ -116,14 +126,14 @@ export const sendMessage = async (req, res) => {
 
 export const sendGroupMessage = async (req, res) => {
   try {
-    const { text, image } = req.body;
+    const { text, image, voice } = req.body;
     const { groupId } = req.params;
     const senderId = req.user._id;
 
-    console.log("sendGroupMessage called:", { text, image: !!image, groupId, senderId });
+    console.log("sendGroupMessage called:", { text, image: !!image, voice: !!voice, groupId, senderId });
 
-    if (!text && !image) {
-      return res.status(400).json({ message: "Text or image is required." });
+    if (!text && !image && !voice) {
+      return res.status(400).json({ message: "Text, image, or voice is required." });
     }
 
     // Verify user is a member of the group
@@ -139,11 +149,21 @@ export const sendGroupMessage = async (req, res) => {
       imageUrl = uploadResponse.secure_url;
     }
 
+    let voiceUrl;
+    if (voice) {
+      const uploadResponse = await cloudinary.uploader.upload(voice, {
+        resource_type: "video",
+        folder: "voice_messages"
+      });
+      voiceUrl = uploadResponse.secure_url;
+    }
+
     const newMessage = new Message({
       senderId,
       groupId,
       text,
       image: imageUrl,
+      voice: voiceUrl,
     });
 
     console.log("Saving group message:", newMessage);

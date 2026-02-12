@@ -1,5 +1,5 @@
 {
-  "name": "sapienschat",
+  "name": "sapianschat",
   "version": "1.0.0",
   "main": "index.js",
   "engines": {
@@ -12,8 +12,8 @@
     "backend:dev": "npm install --prefix backend && npm run dev --prefix backend",
     "frontend:dev": "npm install --prefix frontend && npm run dev --prefix frontend"
   },
-  "keywords": [],
+  "keywords": ["chat", "messaging", "real-time", "socket.io"],
   "author": "",
   "license": "ISC",
-  "description": ""
+  "description": "SapiansChat - A real-time chat application with voice messages and image sharing"
 }

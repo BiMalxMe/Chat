@@ -1,8 +1,6 @@
-Sapiens Chat
+# SapiansChat
 
-# Sapiens Chat
-
-Sapiens Chat is a real-time chat application built with Node.js, Express, and Socket.io. It allows users to create accounts, join chat rooms, and send messages to other users in real-time.
+SapiansChat is a real-time chat application built with Node.js, Express, and Socket.io. It allows users to create accounts, join chat rooms, and send messages to other users in real-time.
 
 ## Features
 
@@ -12,6 +10,8 @@ Sapiens Chat is a real-time chat application built with Node.js, Express, and So
 - Real-time messaging between users
 - Message persistence with MongoDB
 - Image uploading and storage with Cloudinary
+- Voice message support (user-to-user and group chats)
+- Full-screen image viewer for chat images
 - Responsive design
 
 ## Getting Started

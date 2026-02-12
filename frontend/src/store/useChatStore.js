@@ -82,6 +82,7 @@ export const useChatStore = create((set, get) => ({
       receiverId: selectedUser._id,
       text: messageData.text,
       image: messageData.image,
+      voice: messageData.voice,
       createdAt: new Date().toISOString(),
       isOptimistic: true,
     };
@@ -108,6 +109,7 @@ export const useChatStore = create((set, get) => ({
       groupId: selectedGroup._id,
       text: messageData.text,
       image: messageData.image,
+      voice: messageData.voice,
       createdAt: new Date().toISOString(),
       isOptimistic: true,
     };
