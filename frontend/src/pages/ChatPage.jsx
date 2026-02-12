@@ -2,6 +2,7 @@ import { useEffect } from "react";
 import { useChatStore } from "../store/useChatStore";
 import { useGroupStore } from "../store/useGroupStore";
 import { useAuthStore } from "../store/useAuthStore";
+import { useQuizStore } from "../store/useQuizStore";
 
 import BorderAnimatedContainer from "../components/BorderAnimatedContainer";
 import ProfileHeader from "../components/ProfileHeader";
@@ -11,11 +12,14 @@ import GroupsList from "../components/GroupsList";
 import ContactList from "../components/ContactList";
 import ChatContainer from "../components/ChatContainer";
 import NoConversationPlaceholder from "../components/NoConversationPlaceholder";
+import QuizRoom from "../components/QuizRoom";
+import QuizInvitation from "../components/QuizInvitation";
 
 function ChatPage() {
   const { activeTab, selectedUser, selectedGroup } = useChatStore();
   const { getUserGroups, subscribeToGroupEvents, unsubscribeFromGroupEvents } = useGroupStore();
   const { socket } = useAuthStore();
+  const { invitation } = useQuizStore();
 
   useEffect(() => {
     getUserGroups();
@@ -61,6 +65,10 @@ function ChatPage() {
           {(selectedUser || selectedGroup) ? <ChatContainer /> : <NoConversationPlaceholder />}
         </div>
       </BorderAnimatedContainer>
+
+      {/* Quiz Components */}
+      {invitation && <QuizInvitation />}
+      <QuizRoom />
     </div>
   );
 }

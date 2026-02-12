@@ -2,6 +2,7 @@ import { create } from "zustand";
 import { axiosInstance } from "../lib/axios";
 import toast from "react-hot-toast";
 import { io } from "socket.io-client";
+import { useQuizStore } from "./useQuizStore";
 
 const BASE_URL = import.meta.env.MODE === "development" ? "http://localhost:3000" : "/";
 
@@ -84,17 +85,12 @@ export const useAuthStore = create((set, get) => ({
     const { authUser } = get();
     if (!authUser || get().socket?.connected) return;
 
-    console.log("=== CONNECTING SOCKET ===");
-    console.log("Auth user:", authUser);
-    console.log("BASE_URL:", BASE_URL);
-
     const socket = io(BASE_URL, {
-      withCredentials: true, // this ensures cookies are sent with the connection
+      withCredentials: true,
     });
 
     socket.on("connect", () => {
       console.log("Socket connected successfully!");
-      console.log("Socket ID:", socket.id);
     });
 
     socket.on("disconnect", () => {
@@ -109,10 +105,15 @@ export const useAuthStore = create((set, get) => ({
 
     set({ socket });
 
-    // listen for online users event
     socket.on("getOnlineUsers", (userIds) => {
       console.log("Online users updated:", userIds);
       set({ onlineUsers: userIds });
+    });
+
+    // Quiz invitation listener
+    socket.on("quiz-invitation", (invitation) => {
+      console.log("Quiz invitation received:", invitation);
+      useQuizStore.getState().setInvitation(invitation);
     });
   },
 

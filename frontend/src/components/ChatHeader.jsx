@@ -4,6 +4,7 @@ import { useEffect } from "react";
 import { useAuthStore } from "../store/useAuthStore";
 import GroupAvatar from "./GroupAvatar";
 import CallButton from "./CallButton";
+import QuizButton from "./QuizButton";
 
 function ChatHeader() {
   const { selectedUser, selectedGroup, setSelectedUser, setSelectedGroup } = useChatStore();
@@ -69,11 +70,14 @@ function ChatHeader() {
 
       <div className="flex items-center space-x-2">
         {!isGroupChat && selectedUser && (
-          <CallButton
-            targetUserId={selectedUser._id}
-            targetUserName={selectedUser.fullName}
-            isOnline={isOnline}
-          />
+          <>
+            <QuizButton />
+            <CallButton
+              targetUserId={selectedUser._id}
+              targetUserName={selectedUser.fullName}
+              isOnline={isOnline}
+            />
+          </>
         )}
         <button onClick={handleClose}>
           <XIcon className="w-5 h-5 text-slate-400 hover:text-slate-200 transition-colors cursor-pointer" />

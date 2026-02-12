@@ -20,7 +20,7 @@ export const SocketProvider = ({ children }) => {
   useEffect(() => {
     if (authUser) {
       const socket = io('http://localhost:3000', {
-        withCredentials: true, // Send cookies
+        withCredentials: true,
       });
 
       setSocket(socket);
