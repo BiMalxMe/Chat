@@ -48,28 +48,31 @@ function ChatPage() {
   };
 
   return (
-    <div className="relative w-full max-w-6xl h-[800px]">
-      <BorderAnimatedContainer>
-        {/* LEFT SIDE */}
-        <div className="w-80 bg-zinc-900/50 backdrop-blur-sm flex flex-col border-r border-zinc-800/50">
-          <ProfileHeader />
-          <ActiveTabSwitch />
+    <div className="w-full flex items-center justify-center p-4 bg-black">
+      <div className="relative w-full max-w-6xl h-[800px]">
+        <BorderAnimatedContainer>
+          {/* LEFT SIDE */}
+          <div className="w-80 bg-zinc-900/50 backdrop-blur-sm flex flex-col border-r border-zinc-800/50">
+            <ProfileHeader />
+            <ActiveTabSwitch />
 
-          <div className="flex-1 overflow-y-auto">
-            {renderLeftContent()}
+            <div className="flex-1 overflow-y-auto">
+              {renderLeftContent()}
+            </div>
           </div>
-        </div>
 
-        {/* RIGHT SIDE */}
-        <div className="flex-1 flex flex-col bg-black/50 backdrop-blur-sm">
-          {(selectedUser || selectedGroup) ? <ChatContainer /> : <NoConversationPlaceholder />}
-        </div>
-      </BorderAnimatedContainer>
+          {/* RIGHT SIDE */}
+          <div className="flex-1 flex flex-col bg-black/50 backdrop-blur-sm">
+            {(selectedUser || selectedGroup) ? <ChatContainer /> : <NoConversationPlaceholder />}
+          </div>
+        </BorderAnimatedContainer>
 
-      {/* Quiz Components */}
-      {invitation && <QuizInvitation />}
-      <QuizRoom />
+        {/* Quiz Components */}
+        {invitation && <QuizInvitation />}
+        <QuizRoom />
+      </div>
     </div>
   );
 }
+
 export default ChatPage;
