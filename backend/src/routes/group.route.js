@@ -7,6 +7,7 @@ import {
   addGroupMembers,
   removeGroupMember,
   leaveGroup,
+  transferAdmin,
   updateGroup,
 } from "../controllers/group.controller.js";
 
@@ -18,6 +19,7 @@ router.get("/:groupId", protectRoute, getGroupById);
 router.post("/:groupId/members", protectRoute, addGroupMembers);
 router.delete("/:groupId/members/:memberId", protectRoute, removeGroupMember);
 router.delete("/:groupId/leave", protectRoute, leaveGroup);
+router.put("/:groupId/transfer-admin", protectRoute, transferAdmin);
 router.put("/:groupId", protectRoute, updateGroup);
 
 export default router;

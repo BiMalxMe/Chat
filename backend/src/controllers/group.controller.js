@@ -200,6 +200,49 @@ export const leaveGroup = async (req, res) => {
   }
 };
 
+export const transferAdmin = async (req, res) => {
+  try {
+    const { groupId } = req.params;
+    const { newAdminId } = req.body;
+    const currentAdminId = req.user._id;
+
+    const group = await Group.findOne({ _id: groupId, admin: currentAdminId });
+    if (!group) {
+      return res.status(403).json({ message: "Only current admin can transfer admin rights." });
+    }
+
+    // Verify new admin is a member of the group
+    if (!group.members.includes(newAdminId)) {
+      return res.status(400).json({ message: "New admin must be a member of the group." });
+    }
+
+    // Transfer admin rights
+    group.admin = newAdminId;
+    await group.save();
+
+    await group.populate("admin", "fullName email profilePic");
+    await group.populate("members", "fullName email profilePic");
+
+    // Notify all group members about admin change
+    group.members.forEach((member) => {
+      const memberSocketId = getReceiverSocketId(member._id.toString());
+      if (memberSocketId) {
+        io.to(memberSocketId).emit("adminTransferred", {
+          groupId: group._id,
+          groupName: group.name,
+          newAdminId,
+          newAdminName: group.admin.fullName
+        });
+      }
+    });
+
+    res.status(200).json(group);
+  } catch (error) {
+    console.log("Error in transferAdmin controller: ", error.message);
+    res.status(500).json({ error: "Internal server error" });
+  }
+};
+
 export const updateGroup = async (req, res) => {
   try {
     const { groupId } = req.params;

@@ -132,6 +132,29 @@ export const useGroupStore = create((set, get) => ({
     }
   },
 
+  transferAdmin: async (groupId, newAdminId) => {
+    try {
+      const res = await axiosInstance.put(`/groups/${groupId}/transfer-admin`, { newAdminId });
+      const { groups, selectedGroup } = get();
+      
+      if (selectedGroup?._id === groupId) {
+        set({ selectedGroup: res.data });
+      }
+      
+      set({ 
+        groups: groups.map(group => 
+          group._id === groupId ? res.data : group
+        )
+      });
+      
+      toast.success("Admin rights transferred successfully");
+      return res.data;
+    } catch (error) {
+      toast.error(error.response?.data?.message || "Failed to transfer admin rights");
+      throw error;
+    }
+  },
+
   subscribeToGroupEvents: () => {
     const socket = useAuthStore.getState().socket;
 
@@ -156,6 +179,34 @@ export const useGroupStore = create((set, get) => ({
       toast.error(`You've been removed from group: ${groupName}`);
     });
 
+    socket.on("adminTransferred", ({ groupId, groupName, newAdminName }) => {
+      const { groups, selectedGroup } = get();
+      
+      // Update the group in the list
+      set({ 
+        groups: groups.map(group => {
+          if (group._id === groupId) {
+            // Find the new admin in members and update
+            const newAdmin = group.members.find(member => member.fullName === newAdminName);
+            if (newAdmin) {
+              return { ...group, admin: newAdmin };
+            }
+          }
+          return group;
+        })
+      });
+      
+      // Update selected group if it's the current one
+      if (selectedGroup?._id === groupId) {
+        const newAdmin = selectedGroup.members.find(member => member.fullName === newAdminName);
+        if (newAdmin) {
+          set({ selectedGroup: { ...selectedGroup, admin: newAdmin } });
+        }
+      }
+      
+      toast.info(`${newAdminName} is now the admin of ${groupName}`);
+    });
+
     socket.on("groupUpdated", (updatedGroup) => {
       const { groups, selectedGroup } = get();
       
@@ -176,6 +227,7 @@ export const useGroupStore = create((set, get) => ({
     socket.off("newGroup");
     socket.off("addedToGroup");
     socket.off("removedFromGroup");
+    socket.off("adminTransferred");
     socket.off("groupUpdated");
   },
 }));

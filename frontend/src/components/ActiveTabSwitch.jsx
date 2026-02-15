@@ -8,8 +8,8 @@ function ActiveTabSwitch() {
       <button
         onClick={() => setActiveTab("chats")}
         className={`tab ${
-          activeTab === "chats" ? "bg-cyan-500/20 text-cyan-400" : "text-slate-400"
-        }`}
+          activeTab === "chats" ? "bg-amber-500/20 text-amber-400 border border-amber-500/30" : "text-zinc-400 hover:text-zinc-300"
+        } transition-all duration-200`}
       >
         Chats
       </button>
@@ -17,8 +17,8 @@ function ActiveTabSwitch() {
       <button
         onClick={() => setActiveTab("groups")}
         className={`tab ${
-          activeTab === "groups" ? "bg-cyan-500/20 text-cyan-400" : "text-slate-400"
-        }`}
+          activeTab === "groups" ? "bg-amber-500/20 text-amber-400 border border-amber-500/30" : "text-zinc-400 hover:text-zinc-300"
+        } transition-all duration-200`}
       >
         Groups
       </button>
@@ -26,8 +26,8 @@ function ActiveTabSwitch() {
       <button
         onClick={() => setActiveTab("contacts")}
         className={`tab ${
-          activeTab === "contacts" ? "bg-cyan-500/20 text-cyan-400" : "text-slate-400"
-        }`}
+          activeTab === "contacts" ? "bg-amber-500/20 text-amber-400 border border-amber-500/30" : "text-zinc-400 hover:text-zinc-300"
+        } transition-all duration-200`}
       >
         Contacts
       </button>

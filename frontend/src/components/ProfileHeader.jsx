@@ -1,5 +1,5 @@
 import { useState, useRef } from "react";
-import { LogOutIcon, VolumeOffIcon, Volume2Icon } from "lucide-react";
+import { LogOutIcon, VolumeOffIcon, Volume2Icon, BrainCircuitIcon } from "lucide-react";
 import { useAuthStore } from "../store/useAuthStore";
 import { useChatStore } from "../store/useChatStore";
 
@@ -27,7 +27,7 @@ function ProfileHeader() {
   };
 
   return (
-    <div className="p-6 border-b border-slate-700/50">
+    <div className="p-6 border-b border-zinc-800/50">
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-3">
           {/* AVATAR */}
@@ -57,27 +57,25 @@ function ProfileHeader() {
 
           {/* USERNAME & ONLINE TEXT */}
           <div>
-            <h3 className="text-slate-200 font-medium text-base max-w-[180px] truncate">
-              {authUser.fullName}
-            </h3>
+            <div className="flex items-center gap-2">
+              <h3 className="text-white font-semibold text-base max-w-[180px] truncate">
+                {authUser.fullName}
+              </h3>
+              <div className="flex items-center gap-1">
+                <BrainCircuitIcon className="w-4 h-4 text-amber-400" />
+                <span className="text-xs font-medium bg-gradient-to-r from-amber-400 to-orange-400 bg-clip-text text-transparent">SapiensChat</span>
+              </div>
+            </div>
 
-            <p className="text-slate-400 text-xs">Online</p>
+            <p className="text-zinc-400 text-xs">Active now</p>
           </div>
         </div>
 
         {/* BUTTONS */}
-        <div className="flex gap-4 items-center">
-          {/* LOGOUT BTN */}
-          <button
-            className="text-slate-400 hover:text-slate-200 transition-colors"
-            onClick={logout}
-          >
-            <LogOutIcon className="size-5" />
-          </button>
-
+        <div className="flex gap-3 items-center">
           {/* SOUND TOGGLE BTN */}
           <button
-            className="text-slate-400 hover:text-slate-200 transition-colors"
+            className="text-zinc-400 hover:text-amber-400 transition-colors p-2 rounded-lg hover:bg-zinc-800/50"
             onClick={() => {
               // play click sound before toggling
               mouseClickSound.currentTime = 0; // reset to start
@@ -90,6 +88,14 @@ function ProfileHeader() {
             ) : (
               <VolumeOffIcon className="size-5" />
             )}
+          </button>
+
+          {/* LOGOUT BTN */}
+          <button
+            className="text-zinc-400 hover:text-red-400 transition-colors p-2 rounded-lg hover:bg-zinc-800/50"
+            onClick={logout}
+          >
+            <LogOutIcon className="size-5" />
           </button>
         </div>
       </div>

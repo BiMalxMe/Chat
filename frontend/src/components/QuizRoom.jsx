@@ -41,7 +41,7 @@ function QuizRoom() {
   
   const isMeWinner = myScore > oppScore;
   const isTie = myScore === oppScore;
-  const opponentName = playerNames[opponentId] || "Opponent";
+  const opponentName = (opponentId && playerNames?.[opponentId]) || "Opponent";
 
   useEffect(() => {
     if (!socket) return;
