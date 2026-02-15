@@ -6,8 +6,12 @@ import NoChatHistoryPlaceholder from "./NoChatHistoryPlaceholder";
 import MessageInput from "./MessageInput";
 import MessagesLoadingSkeleton from "./MessagesLoadingSkeleton";
 import ImageViewer from "./ImageViewer";
+import MessageRenderer from "./MessageRenderer";
+import useMentionNotifications from "../hooks/useMentionNotifications";
 
 function ChatContainer() {
+  useMentionNotifications(); // Enable mention notifications
+  
   const {
     selectedUser,
     selectedGroup,
@@ -128,7 +132,11 @@ function ChatContainer() {
                         </div>
                       )}
                       
-                      {msg.text && <p className="mt-2 whitespace-pre-wrap">{msg.text}</p>}
+                      {msg.text && (
+                        <p className="mt-2 whitespace-pre-wrap">
+                          <MessageRenderer text={msg.text} />
+                        </p>
+                      )}
                       
                       <p className="text-xs mt-1 opacity-75 flex items-center gap-1">
                         {msg.isOptimistic ? (

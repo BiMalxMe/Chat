@@ -2,7 +2,9 @@ import { useRef, useState, useEffect } from "react";
 import useKeyboardSound from "../hooks/useKeyboardSound";
 import { useChatStore } from "../store/useChatStore";
 import toast from "react-hot-toast";
-import { ImageIcon, SendIcon, XIcon, MicIcon, StopCircleIcon } from "lucide-react";
+import { ImageIcon, SendIcon, XIcon, MicIcon, StopCircleIcon, SmileIcon } from "lucide-react";
+import EmojiPicker from "./EmojiPicker";
+import MentionInput from "./MentionInput";
 
 function MessageInput() {
   const { playRandomKeyStrokeSound } = useKeyboardSound();
@@ -11,6 +13,7 @@ function MessageInput() {
   const [isRecording, setIsRecording] = useState(false);
   const [recordingTime, setRecordingTime] = useState(0);
   const [voicePreview, setVoicePreview] = useState(null);
+  const [showEmojiPicker, setShowEmojiPicker] = useState(false);
 
   const fileInputRef = useRef(null);
   const mediaRecorderRef = useRef(null);
@@ -77,6 +80,10 @@ function MessageInput() {
     const mins = Math.floor(seconds / 60);
     const secs = seconds % 60;
     return `${mins}:${secs.toString().padStart(2, "0")}`;
+  };
+
+  const handleEmojiSelect = (emoji) => {
+    setText(prev => prev + emoji);
   };
 
   const handleSendMessage = async (e) => {
@@ -197,17 +204,36 @@ function MessageInput() {
         </div>
       )}
 
-      <form onSubmit={handleSendMessage} className="max-w-3xl mx-auto flex space-x-4">
-        <input
-          type="text"
-          value={text}
-          onChange={(e) => {
-            setText(e.target.value);
-            isSoundEnabled && playRandomKeyStrokeSound();
-          }}
-          className="flex-1 bg-slate-800/50 border border-slate-700/50 rounded-lg py-2 px-4 text-white placeholder-slate-400 focus:outline-none focus:border-cyan-500 transition-colors"
-          placeholder={getPlaceholder()}
-        />
+      <form onSubmit={handleSendMessage} className="max-w-3xl mx-auto flex space-x-4 relative">
+        {selectedGroup ? (
+          <MentionInput
+            value={text}
+            onChange={setText}
+            placeholder={getPlaceholder()}
+            disabled={isRecording}
+          />
+        ) : (
+          <input
+            type="text"
+            value={text}
+            onChange={(e) => {
+              setText(e.target.value);
+              isSoundEnabled && playRandomKeyStrokeSound();
+            }}
+            className="flex-1 bg-slate-800/50 border border-slate-700/50 rounded-lg py-2 px-4 text-white placeholder-slate-400 focus:outline-none focus:border-cyan-500 transition-colors"
+            placeholder={getPlaceholder()}
+          />
+        )}
+
+        <button
+          type="button"
+          onClick={() => setShowEmojiPicker(!showEmojiPicker)}
+          className={`bg-slate-800/50 text-slate-400 hover:text-slate-200 rounded-lg px-4 transition-colors ${
+            showEmojiPicker ? "text-cyan-500" : ""
+          }`}
+        >
+          <SmileIcon className="w-5 h-5" />
+        </button>
 
         <input
           type="file"
@@ -253,6 +279,13 @@ function MessageInput() {
           <SendIcon className="w-5 h-5" />
         </button>
       </form>
+      
+      {/* Emoji Picker */}
+      <EmojiPicker
+        isOpen={showEmojiPicker}
+        onClose={() => setShowEmojiPicker(false)}
+        onEmojiSelect={handleEmojiSelect}
+      />
     </div>
   );
 }
