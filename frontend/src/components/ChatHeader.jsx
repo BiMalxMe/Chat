@@ -6,6 +6,7 @@ import { useGroupStore } from "../store/useGroupStore";
 import GroupAvatar from "./GroupAvatar";
 import CallButton from "./CallButton";
 import QuizButton from "./QuizButton";
+import ReportButton from "./ReportButton";
 import GroupMembers from "./GroupMembers";
 
 function ChatHeader() {
@@ -89,6 +90,7 @@ function ChatHeader() {
         <div className="flex items-center space-x-2">
           {!isGroupChat && selectedUser && (
             <>
+              <ReportButton />
               <QuizButton />
               <CallButton
                 targetUserId={selectedUser._id}

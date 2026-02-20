@@ -9,6 +9,8 @@ const useAdminStore = create((set) => ({
   users: [],
   selectedUser: null,
   dashboardStats: null,
+  reports: [],
+  reportsPagination: null,
   loading: false,
   error: null,
 
@@ -44,6 +46,8 @@ const useAdminStore = create((set) => ({
       users: [],
       selectedUser: null,
       dashboardStats: null,
+      reports: [],
+      reportsPagination: null,
       error: null
     });
   },
@@ -147,6 +151,88 @@ const useAdminStore = create((set) => ({
         error: message, 
         loading: false 
       });
+    }
+  },
+
+  fetchReports: async (page = 1, status = '') => {
+    const adminToken = localStorage.getItem('adminToken');
+    if (!adminToken) return;
+
+    set({ loading: true, error: null });
+    try {
+      const params = new URLSearchParams({ page: page.toString() });
+      if (status) params.append('status', status);
+      
+      const response = await axiosInstance.get(`/admin/reports?${params}`, {
+        headers: { Authorization: `Bearer ${adminToken}` }
+      });
+      
+      set({ 
+        reports: response.data.reports, 
+        reportsPagination: response.data.pagination,
+        loading: false 
+      });
+    } catch (error) {
+      const message = error.response?.data?.message || 'Failed to fetch reports';
+      set({ 
+        error: message, 
+        loading: false 
+      });
+    }
+  },
+
+  updateReportStatus: async (reportId, status) => {
+    const adminToken = localStorage.getItem('adminToken');
+    if (!adminToken) return { success: false, error: 'Not authenticated' };
+
+    set({ loading: true, error: null });
+    try {
+      const response = await axiosInstance.put(`/admin/reports/${reportId}`, 
+        { status },
+        { headers: { Authorization: `Bearer ${adminToken}` } }
+      );
+      
+      set(state => ({
+        reports: state.reports.map(report => 
+          report._id === reportId ? response.data.report : report
+        ),
+        loading: false
+      }));
+      
+      return { success: true };
+    } catch (error) {
+      const message = error.response?.data?.message || 'Failed to update report status';
+      set({ 
+        error: message, 
+        loading: false 
+      });
+      return { success: false, error: message };
+    }
+  },
+
+  deleteReport: async (reportId) => {
+    const adminToken = localStorage.getItem('adminToken');
+    if (!adminToken) return { success: false, error: 'Not authenticated' };
+
+    set({ loading: true, error: null });
+    try {
+      await axiosInstance.delete(`/admin/reports/${reportId}`, {
+        headers: { Authorization: `Bearer ${adminToken}` }
+      });
+      
+      set(state => ({
+        reports: state.reports.filter(report => report._id !== reportId),
+        loading: false
+      }));
+      
+      return { success: true };
+    } catch (error) {
+      const message = error.response?.data?.message || 'Failed to delete report';
+      set({ 
+        error: message, 
+        loading: false 
+      });
+      return { success: false, error: message };
     }
   },
 

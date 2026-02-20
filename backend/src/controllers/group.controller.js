@@ -282,3 +282,36 @@ export const updateGroup = async (req, res) => {
     res.status(500).json({ error: "Internal server error" });
   }
 };
+
+export const deleteGroup = async (req, res) => {
+  try {
+    const { groupId } = req.params;
+    const userId = req.user._id;
+
+    const group = await Group.findOne({ _id: groupId, admin: userId });
+    if (!group) {
+      return res.status(403).json({ message: "Only group admin can delete the group." });
+    }
+
+    // Delete all messages in the group
+    await Message.deleteMany({ groupId });
+
+    // Notify all group members that the group is being deleted
+    group.members.forEach((member) => {
+      if (member._id.toString() !== userId.toString()) {
+        const memberSocketId = getReceiverSocketId(member._id.toString());
+        if (memberSocketId) {
+          io.to(memberSocketId).emit("groupDeleted", { groupId, groupName: group.name });
+        }
+      }
+    });
+
+    // Delete the group
+    await Group.findByIdAndDelete(groupId);
+
+    res.status(200).json({ message: "Group deleted successfully." });
+  } catch (error) {
+    console.log("Error in deleteGroup controller: ", error.message);
+    res.status(500).json({ error: "Internal server error" });
+  }
+};

@@ -2,6 +2,7 @@ import express from 'express';
 import User from "../models/User.js";
 import Group from "../models/Group.js";
 import Message from "../models/Message.js";
+import Report from "../models/Report.js";
 import jwt from 'jsonwebtoken';
 import bcrypt from 'bcryptjs';
 
@@ -216,6 +217,93 @@ router.get('/dashboard/stats', adminAuth, async (req, res) => {
     });
   } catch (error) {
     console.error('Dashboard stats error:', error);
+    res.status(500).json({ message: 'Server error' });
+  }
+});
+
+// Get all reports
+router.get('/reports', adminAuth, async (req, res) => {
+  try {
+    const { page = 1, limit = 20, status } = req.query;
+    const skip = (page - 1) * limit;
+
+    // Build filter
+    const filter = {};
+    if (status && ["pending", "reviewed", "resolved"].includes(status)) {
+      filter.status = status;
+    }
+
+    const reports = await Report.find(filter)
+      .populate("reportedUserId", "fullName email")
+      .populate("reporterId", "fullName email")
+      .sort({ createdAt: -1 })
+      .skip(skip)
+      .limit(parseInt(limit));
+
+    const total = await Report.countDocuments(filter);
+
+    res.json({
+      reports,
+      pagination: {
+        page: parseInt(page),
+        limit: parseInt(limit),
+        total,
+        pages: Math.ceil(total / limit)
+      }
+    });
+  } catch (error) {
+    console.error('Get reports error:', error);
+    res.status(500).json({ message: 'Server error' });
+  }
+});
+
+// Update report status
+router.put('/reports/:id', adminAuth, async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { status } = req.body;
+
+    if (!["pending", "reviewed", "resolved"].includes(status)) {
+      return res.status(400).json({ message: "Invalid status" });
+    }
+
+    const report = await Report.findByIdAndUpdate(
+      id,
+      { status },
+      { new: true }
+    ).populate([
+      { path: "reportedUserId", select: "fullName email" },
+      { path: "reporterId", select: "fullName email" }
+    ]);
+
+    if (!report) {
+      return res.status(404).json({ message: "Report not found" });
+    }
+
+    res.json({
+      message: "Report status updated successfully",
+      report
+    });
+  } catch (error) {
+    console.error('Update report status error:', error);
+    res.status(500).json({ message: 'Server error' });
+  }
+});
+
+// Delete report
+router.delete('/reports/:id', adminAuth, async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    const report = await Report.findByIdAndDelete(id);
+
+    if (!report) {
+      return res.status(404).json({ message: "Report not found" });
+    }
+
+    res.json({ message: "Report deleted successfully" });
+  } catch (error) {
+    console.error('Delete report error:', error);
     res.status(500).json({ message: 'Server error' });
   }
 });

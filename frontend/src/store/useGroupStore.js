@@ -155,6 +155,23 @@ export const useGroupStore = create((set, get) => ({
     }
   },
 
+  deleteGroup: async (groupId) => {
+    try {
+      await axiosInstance.delete(`/groups/${groupId}`);
+      const { groups, selectedGroup } = get();
+      
+      set({ 
+        groups: groups.filter(group => group._id !== groupId),
+        selectedGroup: selectedGroup?._id === groupId ? null : selectedGroup
+      });
+      
+      toast.success("Group deleted successfully");
+    } catch (error) {
+      toast.error(error.response?.data?.message || "Failed to delete group");
+      throw error;
+    }
+  },
+
   subscribeToGroupEvents: () => {
     const socket = useAuthStore.getState().socket;
 
@@ -220,6 +237,17 @@ export const useGroupStore = create((set, get) => ({
         )
       });
     });
+
+    socket.on("groupDeleted", ({ groupId }) => {
+      const { groups, selectedGroup } = get();
+      
+      set({ 
+        groups: groups.filter(group => group._id !== groupId),
+        selectedGroup: selectedGroup?._id === groupId ? null : selectedGroup
+      });
+      
+      toast.error("Group has been deleted by admin");
+    });
   },
 
   unsubscribeFromGroupEvents: () => {
@@ -229,5 +257,6 @@ export const useGroupStore = create((set, get) => ({
     socket.off("removedFromGroup");
     socket.off("adminTransferred");
     socket.off("groupUpdated");
+    socket.off("groupDeleted");
   },
 }));
