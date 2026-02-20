@@ -17,7 +17,7 @@ SapiansChat is a real-time chat application built with Node.js, Express, and Soc
 
 ## Getting Started
 
-1. Clone the repository: `git clone https://github.com/bimalchalise/chat.git`
+1. Clone the repository: `git clone https://github.com/bimalxme/chat.git`
 2. Install dependencies: `npm install`
 3. Create a `.env` file in the root directory and add your environment variables (see `.env.example` for reference)
 4. Start the application: `npm run start`

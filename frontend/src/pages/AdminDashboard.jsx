@@ -6,35 +6,30 @@ import {
   UsersIcon,
   MessageSquareIcon,
   GroupIcon,
-  ClockIcon,
   TrashIcon,
   EyeIcon,
   LogOutIcon,
   BarChart3Icon,
-  TrendingUpIcon,
-  ActivityIcon,
-  ShieldIcon
+  ShieldIcon,
+  SearchIcon,
+  FilterIcon
 } from 'lucide-react';
 import {
   Chart as ChartJS,
   CategoryScale,
   LinearScale,
-  PointElement,
-  LineElement,
   BarElement,
   Title,
   Tooltip,
   Legend,
   ArcElement,
 } from 'chart.js';
-import { Line, Bar, Doughnut } from 'react-chartjs-2';
+import { Bar, Doughnut } from 'react-chartjs-2';
 
 // Register Chart.js components
 ChartJS.register(
   CategoryScale,
   LinearScale,
-  PointElement,
-  LineElement,
   BarElement,
   Title,
   Tooltip,
@@ -44,7 +39,8 @@ ChartJS.register(
 
 function AdminDashboard() {
   const [showUserModal, setShowUserModal] = useState(false);
-  const [selectedComparisonUsers, setSelectedComparisonUsers] = useState([]);
+  const [searchTerm, setSearchTerm] = useState('');
+  const [filterStatus, setFilterStatus] = useState('all');
   const {
     users,
     selectedUser,
@@ -73,46 +69,6 @@ function AdminDashboard() {
     fetchUsers();
   }, [navigate, fetchDashboardStats, fetchUsers]);
 
-  const toggleUserComparison = (userId) => {
-    setSelectedComparisonUsers(prev => {
-      if (prev.includes(userId)) {
-        return prev.filter(id => id !== userId);
-      } else {
-        if (prev.length < 5) {
-          return [...prev, userId];
-        }
-        return prev;
-      }
-    });
-  };
-
-  const getUserComparisonData = () => {
-    const colors = [
-      'rgb(147, 51, 234)',  // Purple
-      'rgb(59, 130, 246)',   // Blue
-      'rgb(34, 197, 94)',   // Green
-      'rgb(245, 158, 11)',  // Amber
-      'rgb(239, 68, 68)'    // Red
-    ];
-
-    const datasets = selectedComparisonUsers.map((userId, index) => {
-      const user = users.find(u => u._id === userId);
-      const color = colors[index % colors.length];
-      
-      return {
-        label: user?.fullName?.split(' ')[0] || 'User',
-        data: [Math.floor(Math.random() * 120) + 30, Math.floor(Math.random() * 120) + 30, Math.floor(Math.random() * 120) + 30, Math.floor(Math.random() * 120) + 30, Math.floor(Math.random() * 120) + 30, Math.floor(Math.random() * 120) + 30, Math.floor(Math.random() * 120) + 30],
-        borderColor: color,
-        backgroundColor: color.replace('rgb', 'rgba').replace(')', ', 0.1)'),
-        tension: 0.4,
-      };
-    });
-
-    return {
-      labels: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'],
-      datasets: datasets
-    };
-  };
 
   const handleUserDelete = async (userId) => {
     if (!confirm('Are you sure you want to delete this user? This action cannot be undone.')) {
@@ -146,23 +102,6 @@ function AdminDashboard() {
   const prepareChartData = () => {
     if (!dashboardStats) return null;
 
-    // Messages over time chart
-    const messagesChartData = {
-      labels: dashboardStats.messagesByDay.map(item => {
-        const date = new Date(item._id);
-        return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
-      }),
-      datasets: [
-        {
-          label: 'Messages',
-          data: dashboardStats.messagesByDay.map(item => item.count),
-          borderColor: 'rgb(147, 51, 234)',
-          backgroundColor: 'rgba(147, 51, 234, 0.1)',
-          tension: 0.4,
-        },
-      ],
-    };
-
     // User registrations chart
     const registrationsChartData = {
       labels: dashboardStats.userRegistrations.map(item => {
@@ -175,32 +114,6 @@ function AdminDashboard() {
           data: dashboardStats.userRegistrations.map(item => item.count),
           backgroundColor: 'rgba(34, 197, 94, 0.8)',
           borderColor: 'rgb(34, 197, 94)',
-          borderWidth: 1,
-        },
-      ],
-    };
-
-    // Top users by time chart
-    const topUsersChartData = {
-      labels: dashboardStats.topUsersByTime.slice(0, 5).map(user => user.fullName.split(' ')[0]),
-      datasets: [
-        {
-          label: 'Time Spent (minutes)',
-          data: dashboardStats.topUsersByTime.slice(0, 5).map(user => Math.floor(user.timeSpent / 60)),
-          backgroundColor: [
-            'rgba(239, 68, 68, 0.8)',
-            'rgba(245, 158, 11, 0.8)',
-            'rgba(59, 130, 246, 0.8)',
-            'rgba(147, 51, 234, 0.8)',
-            'rgba(34, 197, 94, 0.8)',
-          ],
-          borderColor: [
-            'rgb(239, 68, 68)',
-            'rgb(245, 158, 11)',
-            'rgb(59, 130, 246)',
-            'rgb(147, 51, 234)',
-            'rgb(34, 197, 94)',
-          ],
           borderWidth: 1,
         },
       ],
@@ -228,9 +141,7 @@ function AdminDashboard() {
     };
 
     return {
-      messagesChartData,
       registrationsChartData,
-      topUsersChartData,
       platformStatsData,
     };
   };
@@ -269,7 +180,7 @@ function AdminDashboard() {
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Stats Cards */}
         {dashboardStats && (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
             <div className="bg-slate-800 rounded-xl p-6 border border-slate-700">
               <div className="flex items-center justify-between">
                 <div>
@@ -297,23 +208,12 @@ function AdminDashboard() {
                 <MessageSquareIcon className="w-12 h-12 text-green-500/20" />
               </div>
             </div>
-            <div className="bg-slate-800 rounded-xl p-6 border border-slate-700">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-slate-400 text-sm">Active Today</p>
-                  <p className="text-3xl font-bold text-white mt-1">
-                    {Math.floor(dashboardStats.totalUsers * 0.6)}
-                  </p>
-                </div>
-                <ActivityIcon className="w-12 h-12 text-orange-500/20" />
-              </div>
-            </div>
           </div>
         )}
 
         {/* Compact Charts Section */}
         {chartData && (
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 mb-8">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 mb-8">
             {/* User Registrations */}
             <div className="bg-slate-800 rounded-xl p-3 border border-slate-700">
               <h4 className="text-xs font-medium text-white mb-2 flex items-center gap-1">
@@ -341,32 +241,6 @@ function AdminDashboard() {
               </div>
             </div>
 
-            {/* Top Users by Time */}
-            <div className="bg-slate-800 rounded-xl p-3 border border-slate-700">
-              <h4 className="text-xs font-medium text-white mb-2 flex items-center gap-1">
-                <ClockIcon className="w-3 h-3 text-orange-500" />
-                Top Users Time
-              </h4>
-              <div className="h-32">
-                <Bar data={chartData.topUsersChartData} options={{
-                  responsive: true,
-                  maintainAspectRatio: false,
-                  plugins: {
-                    legend: { display: false }
-                  },
-                  scales: {
-                    y: {
-                      ticks: { color: 'white', font: { size: 8 } },
-                      grid: { color: 'rgba(255, 255, 255, 0.1)' }
-                    },
-                    x: {
-                      ticks: { color: 'white', font: { size: 7 } },
-                      grid: { display: false }
-                    }
-                  }
-                }} />
-              </div>
-            </div>
 
             {/* Platform Stats */}
             <div className="bg-slate-800 rounded-xl p-3 border border-slate-700">
@@ -388,71 +262,39 @@ function AdminDashboard() {
             </div>
           </div>
         )}
-        {chartData && (
-          <div className="mb-8">
-            <div className="bg-slate-800 rounded-xl border border-slate-700 p-6">
-              <h3 className="text-lg font-semibold text-white mb-4 flex items-center gap-2">
-                <TrendingUpIcon className="w-5 h-5 text-purple-500" />
-                User Time Comparison (7 Days)
-              </h3>
-              
-              {/* User Selection */}
-              <div className="mb-4 flex flex-wrap gap-2">
-                {users.slice(0, 5).map((user, index) => (
-                  <button
-                    key={user._id}
-                    onClick={() => toggleUserComparison(user._id)}
-                    className={`px-3 py-1 rounded-full text-sm transition-colors ${
-                      selectedComparisonUsers.includes(user._id)
-                        ? 'bg-purple-500 text-white'
-                        : 'bg-slate-700 text-slate-300 hover:bg-slate-600'
-                    }`}
-                  >
-                    {user.fullName.split(' ')[0]}
-                  </button>
-                ))}
-              </div>
-              
-              {/* Comparison Chart */}
-              <div className="h-64">
-                <Line data={getUserComparisonData()} options={{
-                  responsive: true,
-                  maintainAspectRatio: false,
-                  plugins: {
-                    legend: {
-                      labels: { color: 'white', font: { size: 10 } },
-                      position: 'top'
-                    }
-                  },
-                  scales: {
-                    y: {
-                      ticks: { color: 'white', font: { size: 10 } },
-                      grid: { color: 'rgba(255, 255, 255, 0.1)' },
-                      title: {
-                        display: true,
-                        text: 'Minutes Spent',
-                        color: 'white',
-                        font: { size: 10 }
-                      }
-                    },
-                    x: {
-                      ticks: { color: 'white', font: { size: 9 } },
-                      grid: { color: 'rgba(255, 255, 255, 0.1)' }
-                    }
-                  }
-                }} />
-              </div>
-            </div>
-          </div>
-        )}
 
         {/* Users Table */}
         <div className="bg-slate-800 rounded-xl border border-slate-700 overflow-hidden">
           <div className="px-6 py-4 border-b border-slate-700">
-            <h3 className="text-lg font-semibold text-white flex items-center gap-2">
-              <UsersIcon className="w-5 h-5 text-purple-500" />
-              User Management ({users.length} total)
-            </h3>
+            <div className="flex items-center justify-between">
+              <h3 className="text-lg font-semibold text-white flex items-center gap-2">
+                <UsersIcon className="w-5 h-5 text-purple-500" />
+                User Management ({users.length} total)
+              </h3>
+              <div className="flex items-center gap-3">
+                {/* Search */}
+                <div className="relative">
+                  <SearchIcon className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-slate-400" />
+                  <input
+                    type="text"
+                    placeholder="Search users..."
+                    value={searchTerm}
+                    onChange={(e) => setSearchTerm(e.target.value)}
+                    className="pl-10 pr-4 py-2 bg-slate-700 text-white rounded-lg border border-slate-600 focus:border-purple-500 focus:outline-none focus:ring-1 focus:ring-purple-500 text-sm"
+                  />
+                </div>
+                {/* Filter */}
+                <select
+                  value={filterStatus}
+                  onChange={(e) => setFilterStatus(e.target.value)}
+                  className="px-4 py-2 bg-slate-700 text-white rounded-lg border border-slate-600 focus:border-purple-500 focus:outline-none focus:ring-1 focus:ring-purple-500 text-sm"
+                >
+                  <option value="all">All Users</option>
+                  <option value="active">Active</option>
+                  <option value="inactive">Inactive</option>
+                </select>
+              </div>
+            </div>
           </div>
           
           <div className="overflow-x-auto">
@@ -472,15 +314,21 @@ function AdminDashboard() {
                     Groups
                   </th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-slate-300 uppercase tracking-wider">
-                    Time Spent
-                  </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-slate-300 uppercase tracking-wider">
                     Actions
                   </th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-700">
-                {users.map((user) => (
+                {users
+                  .filter(user => {
+                    const matchesSearch = user.fullName.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                                         user.email.toLowerCase().includes(searchTerm.toLowerCase());
+                    const matchesFilter = filterStatus === 'all' || 
+                                       (filterStatus === 'active' && user.messageCount > 0) ||
+                                       (filterStatus === 'inactive' && user.messageCount === 0);
+                    return matchesSearch && matchesFilter;
+                  })
+                  .map((user) => (
                   <tr key={user._id} className="hover:bg-slate-700/30 transition-colors">
                     <td className="px-6 py-4 whitespace-nowrap">
                       <div className="flex items-center">
@@ -505,9 +353,6 @@ function AdminDashboard() {
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-slate-300">
                       {user.groupCount || 0}
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-slate-300">
-                      {Math.floor((user.totalTimeSpent || 0) / 60)}h {(user.totalTimeSpent || 0) % 60}m
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm">
                       <div className="flex items-center gap-2">
@@ -569,7 +414,7 @@ function AdminDashboard() {
               </div>
 
               {/* Stats */}
-              <div className="grid grid-cols-3 gap-4">
+              <div className="grid grid-cols-2 gap-4">
                 <div className="bg-slate-700/50 rounded-lg p-4 text-center">
                   <p className="text-2xl font-bold text-white">{selectedUser.stats.messageCount}</p>
                   <p className="text-sm text-slate-400">Messages</p>
@@ -577,12 +422,6 @@ function AdminDashboard() {
                 <div className="bg-slate-700/50 rounded-lg p-4 text-center">
                   <p className="text-2xl font-bold text-white">{selectedUser.stats.groupCount}</p>
                   <p className="text-sm text-slate-400">Groups</p>
-                </div>
-                <div className="bg-slate-700/50 rounded-lg p-4 text-center">
-                  <p className="text-2xl font-bold text-white">
-                    {Math.floor(selectedUser.stats.totalTimeSpent / 60)}h
-                  </p>
-                  <p className="text-sm text-slate-400">Time Spent</p>
                 </div>
               </div>
             </div>

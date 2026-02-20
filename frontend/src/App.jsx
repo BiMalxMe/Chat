@@ -4,6 +4,7 @@ import LoginPage from "./pages/LoginPage";
 import SignUpPage from "./pages/SignUpPage";
 import AdminLogin from "./pages/AdminLogin";
 import AdminDashboard from "./pages/AdminDashboard";
+import LandingPage from "./pages/LandingPage";
 import { useAuthStore } from "./store/useAuthStore";
 import { useAdminStore } from './store/adminStore';
 import { useEffect } from "react";
@@ -47,9 +48,10 @@ function App() {
         {/* CONTENT LAYER - Higher z-index to ensure inputs are clickable */}
         <div className="relative z-10 min-h-screen">
           <Routes>
-            <Route path="/" element={authUser ? <ChatPage /> : <Navigate to="/login" />} />
-            <Route path="/login" element={!authUser ? <LoginPage /> : <Navigate to="/" />} />
-            <Route path="/signup" element={!authUser ? <SignUpPage /> : <Navigate to="/" />} />
+            <Route path="/" element={<LandingPage />} />
+            <Route path="/chat" element={authUser ? <ChatPage /> : <Navigate to="/login" />} />
+            <Route path="/login" element={!authUser ? <LoginPage /> : <Navigate to="/chat" />} />
+            <Route path="/signup" element={!authUser ? <SignUpPage /> : <Navigate to="/chat" />} />
             
             {/* Admin Routes */}
             <Route path="/admin" element={!isAdmin ? <AdminLogin /> : <Navigate to="/admin/dashboard" />} />

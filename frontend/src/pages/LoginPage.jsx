@@ -1,16 +1,63 @@
 import { useState } from "react";
 import { useAuthStore } from "../store/useAuthStore";
+import { useNavigate } from "react-router-dom";
 import BorderAnimatedContainer from "../components/BorderAnimatedContainer";
 import { BrainCircuitIcon, MailIcon, LoaderIcon, LockIcon, SparklesIcon } from "lucide-react";
 import { Link } from "react-router";
+import { useEffect } from "react";
 
 function LoginPage() {
   const [formData, setFormData] = useState({ email: "", password: "" });
-  const { login, isLoggingIn } = useAuthStore();
+  const [errors, setErrors] = useState({});
+  const { login, isLoggingIn, authUser } = useAuthStore();
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    if (authUser) {
+      navigate("/chat");
+    }
+  }, [authUser, navigate]);
+
+  // Validation regex patterns
+  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  const passwordRegex = /^.{6,}$/; // At least 6 characters
+
+  const validateForm = () => {
+    const newErrors = {};
+
+    // Email validation
+    if (!formData.email.trim()) {
+      newErrors.email = "Email address is required";
+    } else if (!emailRegex.test(formData.email.trim())) {
+      newErrors.email = "Please enter a valid email address";
+    }
+
+    // Password validation
+    if (!formData.password) {
+      newErrors.password = "Password is required";
+    } else if (!passwordRegex.test(formData.password)) {
+      newErrors.password = "Password must be at least 6 characters";
+    }
+
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
+  };
+
+  const handleInputChange = (field, value) => {
+    setFormData({ ...formData, [field]: value });
+    
+    // Clear error for this field when user starts typing
+    if (errors[field]) {
+      setErrors({ ...errors, [field]: "" });
+    }
+  };
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    login(formData);
+    
+    if (validateForm()) {
+      login(formData);
+    }
   };
 
   return (
@@ -45,11 +92,15 @@ function LoginPage() {
                       <input
                         type="email"
                         value={formData.email}
-                        onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                        className="input"
+                        onChange={(e) => handleInputChange("email", e.target.value)}
+                        className={`input ${errors.email ? "border-red-500" : ""}`}
                         placeholder="you@example.com"
+                        required
                       />
                     </div>
+                    {errors.email && (
+                      <p className="text-red-500 text-sm mt-1">{errors.email}</p>
+                    )}
                   </div>
 
                   {/* PASSWORD INPUT */}
@@ -60,11 +111,16 @@ function LoginPage() {
                       <input
                         type="password"
                         value={formData.password}
-                        onChange={(e) => setFormData({ ...formData, password: e.target.value })}
-                        className="input"
-                        placeholder="Enter your secure password"
+                        onChange={(e) => handleInputChange("password", e.target.value)}
+                        className={`input ${errors.password ? "border-red-500" : ""}`}
+                        placeholder="Enter your password"
+                        required
+                        minLength="6"
                       />
                     </div>
+                    {errors.password && (
+                      <p className="text-red-500 text-sm mt-1">{errors.password}</p>
+                    )}
                   </div>
 
                   {/* SUBMIT BUTTON */}
@@ -90,11 +146,6 @@ function LoginPage() {
             <div className="hidden md:w-1/2 md:flex items-center justify-center p-8 bg-gradient-to-br from-amber-900/20 via-transparent to-orange-900/20">
               <div className="text-center space-y-8">
                 <div className="space-y-4">
-                  <div className="flex items-center justify-center space-x-2 mb-4">
-                    <SparklesIcon className="w-6 h-6 text-amber-400" />
-                    <span className="text-amber-400 text-sm font-semibold tracking-wider uppercase">PREMIUM CHAT</span>
-                    <SparklesIcon className="w-6 h-6 text-orange-400" />
-                  </div>
                   <h3 className="text-3xl font-bold text-white leading-tight">
                     The Future of
                     <span className="block bg-gradient-to-r from-amber-400 to-orange-400 bg-clip-text text-transparent">Smart Chat</span>
@@ -102,25 +153,6 @@ function LoginPage() {
                   <p className="text-zinc-400 text-lg leading-relaxed max-w-sm mx-auto">
                     Experience conversations that understand context, learn from interactions, and evolve with your needs.
                   </p>
-                </div>
-
-                <div className="grid grid-cols-2 gap-4 max-w-xs mx-auto">
-                  <div className="bg-zinc-900/50 backdrop-blur-sm border border-zinc-800 rounded-xl p-4 text-center">
-                    <div className="text-2xl font-black text-amber-400 mb-1">∞</div>
-                    <div className="text-xs text-zinc-400 font-medium">Unlimited Chats</div>
-                  </div>
-                  <div className="bg-zinc-900/50 backdrop-blur-sm border border-zinc-800 rounded-xl p-4 text-center">
-                    <div className="text-2xl font-black text-orange-400 mb-1">🔒</div>
-                    <div className="text-xs text-zinc-400 font-medium">End-to-End Secure</div>
-                  </div>
-                  <div className="bg-zinc-900/50 backdrop-blur-sm border border-zinc-800 rounded-xl p-4 text-center">
-                    <div className="text-2xl font-black text-amber-400 mb-1">⚡</div>
-                    <div className="text-xs text-zinc-400 font-medium">Lightning Fast</div>
-                  </div>
-                  <div className="bg-zinc-900/50 backdrop-blur-sm border border-zinc-800 rounded-xl p-4 text-center">
-                    <div className="text-2xl font-black text-orange-400 mb-1">💬</div>
-                    <div className="text-xs text-zinc-400 font-medium">Smart Features</div>
-                  </div>
                 </div>
 
                 <div className="flex justify-center gap-2">
